@@ -49,22 +49,18 @@ class Drawbot (object):
         # Number of thread by revolutions per motor
         self.motorStepsPerRev = 200
         self.mmPerRev = 12 * math.pi
-        print("mmPerRev : ", self.mmPerRev)
 
         self.deltamin = self.mmPerRev / self.motorStepsPerRev
         self.deltastep = 0.05 #smaller than delta in purpose to gain in precision
 
         #number of mm by Steps
         self.mmPerStep = self.mmPerRev / self.motorStepsPerRev
-        print("mmPerStep : ", self.mmPerStep)
 
         '''
             Size in steps of the drawing surface
         '''
         self.stepsWidth = self.mmWidth / self.mmPerStep
         self.stepsHeight = self.mmHeight / self.mmPerStep
-        print("stepsWidth", self.stepsWidth)
-        print("stepsHeight", self.stepsHeight)
 
         '''
             Position of the pen holder
@@ -89,7 +85,7 @@ class Drawbot (object):
         self.marginX = 150
         self.marginY = 150
 
-        #opening a connexion with Arduino on the port /dev/ttyACM0 something
+        #opening a connexion with Arduino on the port /dev/ttyACM0 
         self.a = serial.Serial("/dev/ttyACM0", 9600, timeout=0)
 
     '''

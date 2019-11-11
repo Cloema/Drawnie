@@ -9,7 +9,6 @@ import tkinter
 import time
 import serial
 from datetime import datetime
-import numpy as np
 
 #maybe not necessary if we want to make automation on it
 LG_SURF = 1000 #mm distance between the 2 steppers

@@ -6,7 +6,6 @@
 
 import math
 import tkinter
-import matplotlib.pyplot as plt
 import time
 import serial
 from datetime import datetime
@@ -103,13 +102,9 @@ class Drawbot (object):
     def drawStraightline (self, X1, Y1, targetX, targetY):
         indic_drawing = False
         while indic_drawing == False:
-            print("current X : ", self.currentX, " AND current Y : ", self.currentY)
-            print("X1 : ", X1, " AND Y1 : ", Y1)
-            print("targetX : ", targetX, " AND targetY : ", targetY)
             if (X1 != self.currentX and Y1 != self.currentY):
                 #send instruction to the servomotor (motor 2) to make the pen up
                 #MOVE
-                print("2,0")
                 self.write_file("2,0\0")
                 self.a.write("2,0\0".encode())
                 self.motors_move(self.currentX, self.currentY, X1, Y1)
@@ -117,7 +112,6 @@ class Drawbot (object):
             else:
                 #send instruction to the servomotor (motor 2) to make the pen down
                 #WRITE
-                print("2,1")
                 self.write_file("2,1\0")
                 self.a.write("2,1\0".encode())
                 self.motors_move(X1, Y1, targetX, targetY)
@@ -130,7 +124,6 @@ class Drawbot (object):
     def reinit_drawing (self):
         # send instruction to the servomotor (motor 2) to make up the pen
         # MOVE
-        print("2,0")
         self.write_file("2,0\0")
         self.a.write("2,0\0".encode())
         self.motors_move(self.currentX, self.currentY, self.originX, self.originY)
@@ -158,10 +151,7 @@ class Drawbot (object):
         squareX.append(coordX)
         squareY.append(coordY-length)
 
-        print("Square X : ", squareX)
-        print("Square Y : ", squareY)
         cpt_points = 0
-
         while cpt_points < 4:
             #last point
             if cpt_points == 3:
@@ -219,30 +209,20 @@ class Drawbot (object):
         L1 et L2 must belong to [0; sqrt(pow(mmHeight,2) + pow(mmHeight,2)]
      '''
     def motors_move(self, X1, Y1, targetX, targetY):
-        #calculation of the angles
-        teta1 = math.atan2((self.mmHeight-Y1), X1)
-        teta2 = math.atan2((self.mmHeight-Y1), (self.mmWidth-X1))
-        print("teta 1 : ", teta1, " degré : ", math.degrees(teta1))
-        print("teta 2 : ", teta2, " degré : ", math.degrees(teta2))
-
-        #calculation of the final lengths L1 et L2
-        L1 = (self.mmHeight-Y1)/math.sin(teta1)
-        L2 = (L1*math.sin(teta1)) / math.sin(teta2)
-        print("L1 : ", L1)
-        print("L2 : ", L2)
+     
         # calculation of the line for a targetX lower than X1
         if (X1 < targetX):
             pente = (targetY - Y1) / (targetX - X1)
             coordP = ((targetY + Y1) - pente * (targetX + X1)) / 2
             nbVector = round((targetX - X1) / self.deltastep)
         else:
-            if (X1 == targetX):
+            if (X1 == targetX): #vertical line
                 nbVector = round(abs(targetY - Y1) / self.deltastep)
             elif (X1 > targetX):
                 pente = (targetY - Y1) / (targetX - X1)
                 coordP = ((targetY + Y1) - pente * (targetX + X1)) / 2
                 nbVector = abs(round((X1 - targetX) / self.deltastep))
-        print("nbVector : ", nbVector)
+        
         cptNbElement=0
         matX = []
         matY = []
@@ -272,18 +252,13 @@ class Drawbot (object):
                     matX.append(matX[cptNbElement - 1] - self.deltastep)
                     matY.append((pente * matX[cptNbElement]) + coordP)
             cptNbElement +=1
-
-        print("length matX : ", len(matX), "length matY : ", len(matY))
-        print(matX)
-        print(matY)
-
-        matL1 = []
-        matL2 = []
-
-        cptNbElement = 0
-
+            
         # creation of matrix matL1 and matL2 which contain all ruber length between the pen holder and motor 1 for matL1
         #mat2 contain all lengths between motor2 and pen holder
+        matL1 = []
+        matL2 = []
+        cptNbElement = 0
+
         if len(matX) == len(matY):
             while cptNbElement < len(matX):
                 # calculation of the angles
@@ -295,14 +270,6 @@ class Drawbot (object):
                 matL1.append(L1inter)
                 matL2.append(L2inter)
                 cptNbElement += 1
-
-        print("length matL1 : ", len(matL1), "length matL2 : ", len(matL2))
-
-        #SEND the number of revolutions
-        print(matL1)
-        print(matL2)
-        plt.plot(matX, matY, 'go-')
-        plt.show()
 
         #
         #
@@ -316,8 +283,6 @@ class Drawbot (object):
         element_L1.append(L1_real)
         element_L2.append(L2_real)
 
-        print ("mmPerStep : ",  self.mmPerStep)
-
         if len(matL1) == len(matL2):
             while cptNbElement < len(matL1):
                 #MOTOR LEFT
@@ -328,13 +293,11 @@ class Drawbot (object):
                     if L1_real > matL1[cptNbElement]:
                         L1_real -= self.looknbStep (L1_real,matL1[cptNbElement])*self.mmPerStep
                         msg="0,-"+str(self.looknbStep (L1_real,matL1[cptNbElement]))+"\0"
-                        print(msg)
                         self.write_file(msg)
                         self.a.write(msg.encode())
                     else:
                         L1_real += self.looknbStep (L1_real,matL1[cptNbElement])*self.mmPerStep
                         msg="0,"+str(self.looknbStep(L1_real, matL1[cptNbElement]))+"\0"
-                        print(msg)
                         self.write_file(msg)
                         element_L1.append(L1_real)
                         self.a.write(msg.encode())
@@ -345,24 +308,18 @@ class Drawbot (object):
                     if L2_real > matL2[cptNbElement]:
                         L2_real -= self.looknbStep (L2_real,matL2[cptNbElement])*self.mmPerStep
                         msg="1,-"+str(self.looknbStep (L2_real,matL2[cptNbElement]))+"\0"
-                        print(msg)
                         self.write_file(msg)
                         self.a.write(msg.encode())
                     else:
                         L2_real += self.looknbStep (L2_real,matL2[cptNbElement])*self.mmPerStep
                         msg="1,"+str(self.looknbStep(L2_real, matL2[cptNbElement]))+"\0"
-                        print(msg)
                         self.write_file(msg)
                         self.a.write(msg.encode())
                     element_L2.append(L2_real)
-
                 cptNbElement += 1
 
-        print("element L1", element_L1)
-        print("element L2", element_L2)
         self.currentX = targetX
         self.currentY = targetY
-        print("current x : ", self.currentX, " and current Y : ", self.currentY)
         matX.clear()
         matY.clear()
         matL1.clear()

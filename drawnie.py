@@ -47,7 +47,7 @@ class Drawbot (object):
 
         # Number of thread by revolutions per motor
         self.motorStepsPerRev = 200
-        self.mmPerRev = 12 * math.pi
+        self.mmPerRev = 12.7 * math.pi
 
         self.deltamin = self.mmPerRev / self.motorStepsPerRev
         self.deltastep = 0.05 #smaller than delta in purpose to gain in precision
